@@ -1,8 +1,18 @@
-#!/bin/zsh
 
-if ! command -v terminal-notifier &> /dev/null
-then
-    echo "terminal-notifier not installed or not on system path, terminating..."
+uname="$(uname -s)"
+
+if [[ "$uname" == "Linux"* ]]; then
+    if ! command -v notify-send &> /dev/null ; then
+        echo "notify-send not installed or not on system path, terminating..."
+        exit 1
+    fi
+elif [[ "$uname" == "Darwin"* ]]; then
+    if ! command -v terminal-notifier &> /dev/null ; then
+        echo "terminal-notifier not installed or not on system path, terminating..."
+        exit 1
+    fi
+else
+    echo "Unknown operating system, terminating..."
     exit 1
 fi
 
@@ -16,17 +26,30 @@ wrap_java_runtime() {
     if test -f "${NEW_EXECUTABLE}"; then
         # Update
         echo "- Found wrapper script. Updating it... "
-        curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh > ${ORIGINAL_EXECUTABLE}
+
+        if [[ "$uname" == "Linux"* ]]; then
+            curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/notify_linux.sh > ${ORIGINAL_EXECUTABLE}
+        else
+            curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/notify_macos.sh > ${ORIGINAL_EXECUTABLE}
+        fi
+        curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh >> ${ORIGINAL_EXECUTABLE}
     else
         # Install
         if test -f "${ORIGINAL_EXECUTABLE}"; then
 
             type=`file ${ORIGINAL_EXECUTABLE}`
 
-            if [[ ! "${type} == *text*" ]]; then
+            if [[ ! "${type}" == "text"* ]]; then
                 mv ${ORIGINAL_EXECUTABLE} "${NEW_EXECUTABLE}"
                 echo "- Creating wrapper script... "
-                curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh > ${ORIGINAL_EXECUTABLE}
+
+                if [[ "$uname" == "Linux"* ]]; then
+                    curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/notify_linux.sh > ${ORIGINAL_EXECUTABLE}
+                else
+                    curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/notify_macos.sh > ${ORIGINAL_EXECUTABLE}
+                fi
+                curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh >> ${ORIGINAL_EXECUTABLE}
+
                 chmod u+x ${ORIGINAL_EXECUTABLE}
             else
                 echo "- 'java' file is not executable, skipping installation for this runtime"

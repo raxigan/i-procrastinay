@@ -9,7 +9,7 @@ execute_java () {
     runtime=$((end-start))
 
     if (( $runtime > 1 )); then
-        terminal-notifier -title "$1" -message "Operation completed"
+        notify "$1" "Operation completed"
     fi
 }
 
