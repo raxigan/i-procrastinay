@@ -1,3 +1,4 @@
+#!/bin/zsh
 
 uname="$(uname -s)"
 
