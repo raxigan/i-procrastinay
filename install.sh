@@ -11,38 +11,36 @@ wrap_java_runtime() {
     NEW_EXECUTABLE=${JAVA_RUNTIME}/bin/java.bin
     ORIGINAL_EXECUTABLE=${JAVA_RUNTIME}/bin/java
 
-    echo "Wrapping Java runtime: ${JAVA_RUNTIME}"
+    echo "Installing for Java runtime: ${JAVA_RUNTIME}"
 
-    # Update
     if test -f "${NEW_EXECUTABLE}"; then
-        echo "Found wrapper script. Updating it... "
-        curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh >> ${ORIGINAL_EXECUTABLE}
-        echo "Update completed."
-        exit 0
-    fi
-
-    # Install
-    if test -f "${ORIGINAL_EXECUTABLE}"; then
-        echo "Java binary found. Renaming it to ${NEW_EXECUTABLE}"
-        mv ${ORIGINAL_EXECUTABLE} "${NEW_EXECUTABLE}"
+        # Update
+        echo "- Found wrapper script. Updating it... "
+        curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh > ${ORIGINAL_EXECUTABLE}
     else
-        echo "Java binary not found under path ${ORIGINAL_EXECUTABLE}, terminating..."
-        exit 1
+        # Install
+        if test -f "${ORIGINAL_EXECUTABLE}"; then
+
+            type=`file ${ORIGINAL_EXECUTABLE}`
+
+            if [[ ! "${type} == *text*" ]]; then
+                mv ${ORIGINAL_EXECUTABLE} "${NEW_EXECUTABLE}"
+                echo "- Creating wrapper script... "
+                curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh > ${ORIGINAL_EXECUTABLE}
+                chmod u+x ${ORIGINAL_EXECUTABLE}
+            else
+                echo "- 'java' file is not executable, skipping installation for this runtime"
+            fi
+        else
+            echo "- Java binary not found under path ${ORIGINAL_EXECUTABLE}"
+        fi
     fi
-
-    echo "Wrapping Java executable..."
-    curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh >> ${ORIGINAL_EXECUTABLE}
-    echo "Assigning permissions..."
-    chmod u+x ${ORIGINAL_EXECUTABLE}
-
-    echo "Installation completed."
-    exit 0
 }
 
 
 if [ $# -eq 0 ]; then
     
-    echo "No Java runtime paths provided, looking for JAVA_HOME..."
+    echo "Simple mode enabled"
 
     if [[ ! -z "${JAVA_HOME}" ]]; then
         JAVA_RUNTIME=$JAVA_HOME
@@ -53,10 +51,30 @@ if [ $# -eq 0 ]; then
 
 else
 
-    echo "Custom Java runtime paths provided."
+    if [[ ! "$*" == *" --sdkman"* ]]; then
 
-    for path in "$@"; do
-        JAVA_RUNTIME=$path
-        wrap_java_runtime
-    done
+        echo "SDKMAN mode enabled"
+
+        SDKMAN_ROOT=~/.sdkman/candidates/java
+
+        for dir in ${SDKMAN_ROOT}/*/ ; do
+
+            if [[ ! "${dir}" == "${SDKMAN_ROOT}/current/" ]]; then
+
+                JAVA_RUNTIME=$dir
+                wrap_java_runtime
+            fi
+        done
+
+    else
+
+        echo "Custom Java runtime paths provided."
+
+        for path in "$@"; do
+            JAVA_RUNTIME=$path
+            wrap_java_runtime
+        done
+    fi
 fi
+
+echo "Installation completed."
