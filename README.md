@@ -21,4 +21,4 @@ care about notification.
 ### Installation
 
 Run in your terminal:
-curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/install.sh | | bash
+curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/install.sh | bash
