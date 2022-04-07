@@ -9,7 +9,7 @@ Get system notifications when your build is finished and save little by little t
 - in-console and via IDE builds
 - works with [Maven Daemon](https://github.com/apache/maven-mvnd) out of the box
 
-<img src="./resources/notification.gif" width="800"/>
+<img src="./resources/notification.gif"/>
 
 ### How it works
 
@@ -22,12 +22,17 @@ care about everything. No magic, no plugins, just a plain shell scripting.
 
 ### Installation
 
-Clone this repository using git or just download the installation script:
+1. Clone this repository using git or just download the installation script:
 ```commandline
 curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/install.sh --output install.sh
 ```
+2. Add appropriate permissions to be able to run it:
 
-Then run it using one of the following modes:
+```commandline
+chmod u+x install.sh
+```
+
+3. Then run it using one of the following modes:
 
 - simple mode (sufficient in most cases): `./install.sh` (no parameters)
   - tweaks your Java set in JAVA_HOME environment variable
