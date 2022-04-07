@@ -1,8 +1,10 @@
 
+DIR=$(dirname "$0")
+
 execute_java () {
 
     start=`date +%s`
-    java.bin $ARGS
+    ${DIR}/java.bin $ARGS
 
     end=`date +%s`
     runtime=$((end-start))
@@ -21,8 +23,8 @@ if [[ ! "$*" == *" -v"* && ! "$*" == *" --version"* ]]; then
     elif [[ "$*" == *"GradleWorkerMain"* ]]; then
         execute_java "Gradle"
     else
-        java.bin "$@"
+        ${DIR}/java.bin "$@"
     fi
 else
-    java.bin "$@"
+    ${DIR}/java.bin "$@"
 fi
