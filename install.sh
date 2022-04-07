@@ -1,13 +1,14 @@
 #!/bin/zsh
 
-uname="$(uname -s)"
+OS="$(uname -s)"
+DIR=$(dirname "$0")
 
-if [[ "$uname" == "Linux"* ]]; then
+if [[ "$OS" == "Linux"* ]]; then
     if ! command -v notify-send &> /dev/null ; then
         echo "notify-send not installed or not on system path, terminating..."
         exit 1
     fi
-elif [[ "$uname" == "Darwin"* ]]; then
+elif [[ "$OS" == "Darwin"* ]]; then
     if ! command -v terminal-notifier &> /dev/null ; then
         echo "terminal-notifier not installed or not on system path, terminating..."
         exit 1
@@ -17,7 +18,33 @@ else
     exit 1
 fi
 
-wrap_java_runtime() {
+use_local_or_download() {
+    SCRIPT=$1
+
+    if test -f "${DIR}/${SCRIPT}"; then
+        cat ${DIR}/${SCRIPT} > ${ORIGINAL_EXECUTABLE}
+    else
+        curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/${SCRIPT} > ${ORIGINAL_EXECUTABLE}
+    fi
+
+    if test -f "${DIR}/wrapper.sh"; then
+        echo "- Using local wrapper script..."
+        cat ${DIR}/wrapper.sh >> ${ORIGINAL_EXECUTABLE}
+    else
+        echo "- Downloading wrapper script..."
+        curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh >> ${ORIGINAL_EXECUTABLE}
+    fi
+}
+
+prepare_wrapper_script() {
+    if [[ "$OS" == "Linux"* ]]; then
+        use_local_or_download "notify_linux.sh"
+    else
+        use_local_or_download "notify_macos.sh"
+    fi
+}
+
+install_for_runtime() {
 
     NEW_EXECUTABLE=${JAVA_RUNTIME}/bin/java.bin
     ORIGINAL_EXECUTABLE=${JAVA_RUNTIME}/bin/java
@@ -27,13 +54,7 @@ wrap_java_runtime() {
     if test -f "${NEW_EXECUTABLE}"; then
         # Update
         echo "- Found wrapper script. Updating it... "
-
-        if [[ "$uname" == "Linux"* ]]; then
-            curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/notify_linux.sh > ${ORIGINAL_EXECUTABLE}
-        else
-            curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/notify_macos.sh > ${ORIGINAL_EXECUTABLE}
-        fi
-        curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh >> ${ORIGINAL_EXECUTABLE}
+        prepare_wrapper_script
     else
         # Install
         if test -f "${ORIGINAL_EXECUTABLE}"; then
@@ -43,14 +64,7 @@ wrap_java_runtime() {
             if [[ ! "${type}" == "text"* ]]; then
                 mv ${ORIGINAL_EXECUTABLE} "${NEW_EXECUTABLE}"
                 echo "- Creating wrapper script... "
-
-                if [[ "$uname" == "Linux"* ]]; then
-                    curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/notify_linux.sh > ${ORIGINAL_EXECUTABLE}
-                else
-                    curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/notify_macos.sh > ${ORIGINAL_EXECUTABLE}
-                fi
-                curl -s https://raw.githubusercontent.com/raxigan/i-procrastinay/main/wrapper.sh >> ${ORIGINAL_EXECUTABLE}
-
+                prepare_wrapper_script
                 chmod u+x ${ORIGINAL_EXECUTABLE}
             else
                 echo "- 'java' file is not executable, skipping installation for this runtime"
@@ -68,7 +82,7 @@ if [ $# -eq 0 ]; then
 
     if [[ ! -z "${JAVA_HOME}" ]]; then
         JAVA_RUNTIME=$JAVA_HOME
-        wrap_java_runtime
+        install_for_runtime
     else
         echo "JAVA_HOME not set, terminating..."
     fi
@@ -86,7 +100,7 @@ else
             if [[ ! "${dir}" == "${SDKMAN_ROOT}/current/" ]]; then
 
                 JAVA_RUNTIME=$dir
-                wrap_java_runtime
+                install_for_runtime
             fi
         done
 
@@ -96,7 +110,7 @@ else
 
         for path in "$@"; do
             JAVA_RUNTIME=$path
-            wrap_java_runtime
+            install_for_runtime
         done
     fi
 fi
