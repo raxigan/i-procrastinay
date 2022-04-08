@@ -4,7 +4,7 @@
 
 Get system notifications when your build is finished and save little by little time every day.
 
-- on **macOS** or **Linux**
+- for **macOS** and **Linux**
 - **Maven** & **Gradle** supported
 - in-console and via IDE builds
 - works with [Maven Daemon](https://github.com/apache/maven-mvnd) out of the box
@@ -17,7 +17,7 @@ During the installation your Java executable is wrapped up in a shell script whi
 care about everything. No magic, no plugins, just a plain shell scripting.
 
 ### Prerequisites
-- MacOS: [terminal-notifier](https://github.com/julienXX/terminal-notifier) installed (`brew install terminal-notifier`)
+- macOS: [terminal-notifier](https://github.com/julienXX/terminal-notifier) installed (`brew install terminal-notifier`)
 - Linux: [notify-send](https://manpages.debian.org/bullseye/libnotify-bin/notify-send.1.en.html) installed (`apt-get install libnotify-bin`)
 
 ### Installation
