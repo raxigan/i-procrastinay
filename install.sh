@@ -89,7 +89,7 @@ if [ $# -eq 0 ]; then
 
 else
 
-    if [[ ! "$*" == *" --sdkman"* ]]; then
+    if [[ "$*" == *"--sdkman"* ]]; then
 
         echo "SDKMAN mode enabled"
 
